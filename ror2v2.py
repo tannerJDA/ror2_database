@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import StringVar, ttk
-from tkinter.constants import ANCHOR
+from tkinter.constants import ACTIVE, ANCHOR
 
 
 LARGEFONT =("Arial", 35)
@@ -104,11 +104,12 @@ class Record_Run(tk.Frame):
         # button to show frame 3 with text layout3
         button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
         # putting the button in its place by using grid
-        button2.grid(row = 5, column = 2, padx = 10, pady = 10)
+        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
 
         lbl1 = ttk.Label(self, text = "Select Survivor", font = MEDFONT)
         lbl1.grid(row = 1, column = 0)
-
+        
+        # creating the listbox for the user to select which survivor they played as
         survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
         survivs_var = tk.StringVar(value=survivors)
         listbox = tk.Listbox(self, listvariable=survivs_var, height = 7, selectmode='single')
@@ -117,33 +118,40 @@ class Record_Run(tk.Frame):
         lbl2 = ttk.Label(self, text = "Input Run Time", font = MEDFONT)
         lbl2.grid(row = 1, column = 1)
 
+        min_label = ttk.Label(self, text = "Minutes")
+        hour_label = ttk.Label(self, text = "Hours")
         min_entry = ttk.Entry(self, textvariable = min_val)
         hour_entry = ttk.Entry(self, textvariable = hour_val)
 
-        min_entry.grid(row = 2, column=1, padx = 10, pady = 10)
-        hour_entry.grid(row = 3, column=1, padx = 10, pady = 10)
-
+        min_entry.grid(row = 2, column=1, padx = 0, pady = 10)
+        hour_entry.grid(row = 3, column=1, padx = 0, pady = 10)
+        #min_label.grid(row = 2, column = 1, padx = 0)
+        #hour_label.grid(row = 3, column = 1, padx = 0)
 
         lbl3 = ttk.Label(self, text = "Select Difficulty", font = MEDFONT)
-        lbl3.grid(row = 1, column = 2)
+        lbl3.grid(row = 1, column = 3)
         
         # create the radiobuttons for selecting difficulty
         radbut1 = ttk.Radiobutton(self, text = "Drizzle", variable= diff_val, value = 0)
         radbut2 = ttk.Radiobutton(self, text = "Rainstorm", variable= diff_val, value = 1)
         radbut3 = ttk.Radiobutton(self, text = "Monsoon", variable= diff_val, value = 2)
 
-        radbut1.grid(row = 2, column=2)
-        radbut2.grid(row = 3, column=2)
-        radbut3.grid(row = 4, column=2)
+        radbut1.grid(row = 2, column=3)
+        radbut2.grid(row = 3, column=3)
+        radbut3.grid(row = 4, column=3)
 
         # nested function that will be called by the submit button to add the inputted data into the sql database
-        def submit_run(survivor, hours, minutes, diff):
-            if diff == 2:
+        def submit_run(hours, minutes, diff):
+            print(f"diff value = {diff}")
+
+            if int(diff) == 2:
                 difficulty = 'Monsoon'
-            elif diff == 1:
+            elif int(diff) == 1:
                 difficulty = 'Rainstorm'
             else:
                 difficulty = 'Drizzle' 
+
+            survivor = listbox.get(ANCHOR)
 
             print(f"""
             Submitting run with data...\n
@@ -153,14 +161,15 @@ class Record_Run(tk.Frame):
             Difficulty - {difficulty}\n
             """)
 
+            # reset the values in the input sections
             hour_val.set("")
             min_val.set("")
+            listbox.activate(0)
 
-        surv_val = listbox.get(ANCHOR)
+        
          
-
         # create submit button
-        submitbut = ttk.Button(self, text = "Submit", command = lambda: submit_run(surv_val, hour_val.get(), min_val.get(), diff_val))
+        submitbut = ttk.Button(self, text = "Submit", command = lambda: submit_run(hour_val.get(), min_val.get(), diff_val.get()))
         submitbut.grid(row = 5, column=1)
 
 
