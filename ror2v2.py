@@ -1,10 +1,17 @@
 import tkinter as tk
-from tkinter import StringVar, ttk
+from tkinter import PhotoImage, StringVar, image_names, ttk
 from tkinter.constants import ACTIVE, ANCHOR
-
+from PIL import ImageTk, Image
+import random
 
 LARGEFONT =("Arial", 35)
 MEDFONT = ("Arial", 20)
+TINYFONT = ("Arial", 9)
+NUMBER_OF_PLAYERS = 1
+NUMBER_OF_SURVIVORS = 12
+
+containerarray = []
+labelarray = []
 
 class application(tk.Tk):
 
@@ -24,7 +31,7 @@ class application(tk.Tk):
         self.frames = {}
 
         #iterate throught a tuple consisting of the different page layouts
-        for F in (StartPage, Generate_Loadout, Record_Run, Randomize_Run):
+        for F in (StartPage, Generate_Loadout, Record_Run, Randomize_Run_p1, Randomize_Run_p2):
             frame = F(container, self)
 
             #initialize fram of that object from page tuple
@@ -64,31 +71,26 @@ class StartPage(tk.Frame):
         button2.grid(row = 2, column = 1, padx = 10, pady = 10)
 
         ## create button for the randomize run function
-        button3 = ttk.Button(self, text ="Randomize_Run",
-        command = lambda : controller.show_frame(Randomize_Run))
+        button3 = ttk.Button(self, text ="Randomize Run",
+        command = lambda : controller.show_frame(Randomize_Run_p1))
      
         # place button 3 in row 3 col 1
         button3.grid(row = 3, column = 1, padx = 10, pady = 10)
 
-# second window frame page1
-class Generate_Loadout(tk.Frame):
-     
+# window for the generate loadout function
+class Generate_Loadout(tk.Frame):   
     def __init__(self, parent, controller):
          
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text ="Generate Loadout", font = LARGEFONT)
         label.grid(row = 0, column = 4, padx = 10, pady = 10)
   
-    
-        button1 = ttk.Button(self, text ="Home",
-                            command = lambda : controller.show_frame(StartPage))
-     
-        
-        button1.grid(row = 3, column = 1, padx = 10, pady = 10)
+        homebut = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))        
+        homebut.grid(row = 3, column = 1, padx = 10, pady = 10)
 
   
   
-# third window frame page2
+# window for record run page
 class Record_Run(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -118,8 +120,8 @@ class Record_Run(tk.Frame):
         lbl2 = ttk.Label(self, text = "Input Run Time", font = MEDFONT)
         lbl2.grid(row = 1, column = 1)
 
-        min_label = ttk.Label(self, text = "Minutes")
-        hour_label = ttk.Label(self, text = "Hours")
+        #min_label = ttk.Label(self, text = "Minutes")
+        #hour_label = ttk.Label(self, text = "Hours")
         min_entry = ttk.Entry(self, textvariable = min_val)
         hour_entry = ttk.Entry(self, textvariable = hour_val)
 
@@ -165,27 +167,102 @@ class Record_Run(tk.Frame):
             hour_val.set("")
             min_val.set("")
             listbox.activate(0)
-
-        
          
         # create submit button
         submitbut = ttk.Button(self, text = "Submit", command = lambda: submit_run(hour_val.get(), min_val.get(), diff_val.get()))
         submitbut.grid(row = 5, column=1)
 
-
-# third window frame page2
-class Randomize_Run(tk.Frame):
+# landing page for the randomize run functions where the user will input how many players will be in the run (up to 4)
+class Randomize_Run_p1(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        numplayers = tk.StringVar()
+        #global NUMBER_OF_PLAYERS
 
-        label = ttk.Label(self, text ="Record Run", font = LARGEFONT)
-        label.grid(row = 0, column = 4, padx = 10, pady = 10)
+        # nested function to load the next page for the randomize run function
+        def load_rrp2():
+            global NUMBER_OF_PLAYERS
+            NUMBER_OF_PLAYERS = int(numplayers.get())
+            numplayers.set("") # empty the entry field after input is recieved
+            controller.show_frame(Randomize_Run_p2)
 
-        button2 = ttk.Button(self, text ="Home",
-                            command = lambda : controller.show_frame(StartPage))
-    
-        button2.grid(row = 2, column = 1, padx = 10, pady = 10)
+        label = ttk.Label(self, text ="Randomize Run 1", font = LARGEFONT)
+        label.grid(row = 0, column = 1, padx = 10, pady = 10)
 
+        homebut = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        homebut.grid(row = 4, column = 1, padx = 10, pady = 10)
+
+        label1 = ttk.Label(self, text = "How many players will there be?", font = MEDFONT)
+        label1.grid(row = 1, column = 1)
+
+        user_in = ttk.Entry(self, textvariable=numplayers)
+        user_in.grid(row = 2, column= 1)
+
+        submitbut = ttk.Button(self, text = "Submit", command=load_rrp2)
+        submitbut.grid(row = 3, column=1)
+
+        
+
+
+# main page for the randomize run function where the randomized settings will be output to the user
+class Randomize_Run_p2(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        #global NUMBER_OF_PLAYERS
+
+        label = ttk.Label(self, text ="Randomize Run 2", font = LARGEFONT)
+        label.grid(row = 0, column = 1, padx = 10, pady = 10)
+
+        homebut = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage)) 
+        homebut.grid(row = 4, column = 2, padx = 10, pady = 10)
+
+        # create the frame to store the pictures of survivors
+        player_frame = ttk.Frame(self, relief=tk.SUNKEN, borderwidth=3)
+        player_frame.grid(row = 3, column=0)
+
+        survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
+        
+        #create a canvas and label for each player in the game
+        for i in range(NUMBER_OF_PLAYERS+2):
+            # populate container array with empty canvases
+            canvas = tk.Canvas(player_frame, width = 128, height = 128)
+            containerarray.append(canvas)
+
+                # populate label array with proper labels
+            lbl = ttk.Label(player_frame, text = f"Player {i}", font = TINYFONT)
+            labelarray.append(lbl)
+
+        size = len(containerarray)
+        print (f"There are {size} containers")
+
+        for i in range(NUMBER_OF_PLAYERS+2):
+            generated = random.randint(0, NUMBER_OF_SURVIVORS) #generate a random integer in the range of the number of survivors to pick from
+            surv = survivors[generated]
+
+            label = labelarray[i]
+            cont = containerarray[i]
+            img = ImageTk.PhotoImage(Image.open(f"pictures\{surv}.png"))
+            cont.create_image(0, 0, anchor = 'nw', image = img)
+            cont.image = img
+
+            label.grid(row = 0, column = i, padx = 0, pady = 0)
+            cont.grid(row = 1, column = i, padx = 0, pady = 0)
+        
+        '''
+        # test code for loading on image into the player frame
+        canvas1 = tk.Canvas(player_frame, width = 128, height = 128)
+        canvas1.grid(row = 0, column=0)
+        img = ImageTk.PhotoImage(Image.open("pictures\Captain.png"))
+        canvas1.create_image(0, 0, anchor = 'nw', image = img)
+        canvas1.image = img
+        '''
+
+
+        # debugging function to output the currently held value for number of players
+        def show_num():
+            print(f"Selected number of players = {NUMBER_OF_PLAYERS}")
+        testbut = ttk.Button(self, text = "test", command=show_num)
+        testbut.grid(row = 4, column=0)
 
 #driver code
 app = application()
