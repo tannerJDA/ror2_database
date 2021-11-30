@@ -174,16 +174,20 @@ class Record_Run(tk.Frame):
 
 # landing page for the randomize run functions where the user will input how many players will be in the run (up to 4)
 class Randomize_Run_p1(tk.Frame):
+    num_players = 1
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        numplayers = tk.StringVar()
+        numplayers_in = tk.StringVar()
         #global NUMBER_OF_PLAYERS
 
         # nested function to load the next page for the randomize run function
         def load_rrp2():
             global NUMBER_OF_PLAYERS
-            NUMBER_OF_PLAYERS = int(numplayers.get())
-            numplayers.set("") # empty the entry field after input is recieved
+            num_players = numplayers_in.get()
+            NUMBER_OF_PLAYERS = int(num_players)
+            print(f"Setting NUMBER_OF_PLAYERS to {num_players}")
+            numplayers_in.set("") # empty the entry field after input is recieved
             controller.show_frame(Randomize_Run_p2)
 
         label = ttk.Label(self, text ="Randomize Run 1", font = LARGEFONT)
@@ -195,7 +199,7 @@ class Randomize_Run_p1(tk.Frame):
         label1 = ttk.Label(self, text = "How many players will there be?", font = MEDFONT)
         label1.grid(row = 1, column = 1)
 
-        user_in = ttk.Entry(self, textvariable=numplayers)
+        user_in = ttk.Entry(self, textvariable=numplayers_in)
         user_in.grid(row = 2, column= 1)
 
         submitbut = ttk.Button(self, text = "Submit", command=load_rrp2)
@@ -205,59 +209,80 @@ class Randomize_Run_p1(tk.Frame):
 
 
 # main page for the randomize run function where the randomized settings will be output to the user
-class Randomize_Run_p2(tk.Frame):
+# is a child class of the first randomize run page
+class Randomize_Run_p2(Randomize_Run_p1): 
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         #global NUMBER_OF_PLAYERS
 
+        frame = ttk.Frame()
+        
+        def gen_player_frames(players = NUMBER_OF_PLAYERS):
+            print(f"Generating frame with {players} players")
+            gen_but.destroy() # delete the generate button
+            survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
+
+            # create the frame to store the pictures of survivors
+            frame = ttk.Frame(self, relief=tk.SUNKEN, borderwidth=3)
+            frame.grid(row = 3, column=0)
+
+            containerarray = []
+            labelarray = []
+
+            #create a canvas and label for each player in the game
+            for i in range(players):
+                # populate container array with empty canvases
+                canvas = tk.Canvas(frame, width = 128, height = 128)
+                containerarray.append(canvas)
+
+                j = i + 1
+                # populate label array with proper labels
+                lbl = ttk.Label(frame, text = f"Player {j}", font = TINYFONT)
+                labelarray.append(lbl)
+
+            size = len(containerarray)
+            print (f"There are {size} containers")
+
+            for i in range(players):
+                generated = random.randint(0, NUMBER_OF_SURVIVORS) #generate a random integer in the range of the number of survivors to pick from
+                surv = survivors[generated]
+
+                label = labelarray[i]
+                cont = containerarray[i]
+                img = ImageTk.PhotoImage(Image.open(f"pictures\{surv}.png"))
+                cont.create_image(0, 0, anchor = 'nw', image = img)
+                cont.image = img
+
+                label.grid(row = 0, column = i, padx = 0, pady = 0)
+                cont.grid(row = 1, column = i, padx = 0, pady = 0)
+
+
+        # generate button that calls the generate player frames function
+        gen_but = ttk.Button(self, text = "GENERATE", command= lambda: gen_player_frames(NUMBER_OF_PLAYERS))
+        gen_but.grid(row = 1, column= 1)
+
         label = ttk.Label(self, text ="Randomize Run 2", font = LARGEFONT)
         label.grid(row = 0, column = 1, padx = 10, pady = 10)
+        
+        # function called by the home button
+        # clears the frame
+        def close_page():
+            # delete all canvases in the player_frame container
+            frame.destroy()
+            
+            # replace the generate button
+            gen_but = ttk.Button(self, text = "GENERATE", command= gen_player_frames)
+            gen_but.grid(row = 1, column= 1)
 
-        homebut = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage)) 
+            controller.show_frame(StartPage)
+
+        # create home button to go back to the start page
+        homebut = ttk.Button(self, text ="Home", command = close_page) 
         homebut.grid(row = 4, column = 2, padx = 10, pady = 10)
-
-        # create the frame to store the pictures of survivors
-        player_frame = ttk.Frame(self, relief=tk.SUNKEN, borderwidth=3)
-        player_frame.grid(row = 3, column=0)
-
-        survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
         
-        #create a canvas and label for each player in the game
-        for i in range(NUMBER_OF_PLAYERS+2):
-            # populate container array with empty canvases
-            canvas = tk.Canvas(player_frame, width = 128, height = 128)
-            containerarray.append(canvas)
-
-                # populate label array with proper labels
-            lbl = ttk.Label(player_frame, text = f"Player {i}", font = TINYFONT)
-            labelarray.append(lbl)
-
-        size = len(containerarray)
-        print (f"There are {size} containers")
-
-        for i in range(NUMBER_OF_PLAYERS+2):
-            generated = random.randint(0, NUMBER_OF_SURVIVORS) #generate a random integer in the range of the number of survivors to pick from
-            surv = survivors[generated]
-
-            label = labelarray[i]
-            cont = containerarray[i]
-            img = ImageTk.PhotoImage(Image.open(f"pictures\{surv}.png"))
-            cont.create_image(0, 0, anchor = 'nw', image = img)
-            cont.image = img
-
-            label.grid(row = 0, column = i, padx = 0, pady = 0)
-            cont.grid(row = 1, column = i, padx = 0, pady = 0)
         
-        '''
-        # test code for loading on image into the player frame
-        canvas1 = tk.Canvas(player_frame, width = 128, height = 128)
-        canvas1.grid(row = 0, column=0)
-        img = ImageTk.PhotoImage(Image.open("pictures\Captain.png"))
-        canvas1.create_image(0, 0, anchor = 'nw', image = img)
-        canvas1.image = img
-        '''
-
-
+        
         # debugging function to output the currently held value for number of players
         def show_num():
             print(f"Selected number of players = {NUMBER_OF_PLAYERS}")
