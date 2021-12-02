@@ -82,13 +82,63 @@ class Generate_Loadout(tk.Frame):
     def __init__(self, parent, controller):
          
         tk.Frame.__init__(self, parent)
+
+        recitems = {
+            "Acrid": ["Backup_Magazine", "Bison_Steak", "Energy_Drink", "Warbanner", "Topaz_Brooch"],
+            "Huntress": ["Lens-Makers_Glasses", "Crowbar", "Pauls_Goat_Hoof"]
+        }
+
+        
         label = ttk.Label(self, text ="Generate Loadout", font = LARGEFONT)
-        label.grid(row = 0, column = 4, padx = 10, pady = 10)
+        label.grid(row = 0, column = 0, padx = 10, pady = 10)
   
         homebut = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))        
         homebut.grid(row = 3, column = 1, padx = 10, pady = 10)
 
-  
+        listlabel = ttk.Label(self, text = "Select a survivor", font = MEDFONT)
+        listlabel.grid(row =1, column=0)
+
+        # creating the listbox for the user to select which survivor they played as
+        survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
+        survivs_var = tk.StringVar(value=survivors)
+        listbox = tk.Listbox(self, listvariable=survivs_var, height = 7, selectmode='single')
+        listbox.grid(row = 2, column=0)
+
+
+        # create inner frame for items to be displayed in
+        itemlabel = ttk.Label(self, text = "Reccomended Items", font = MEDFONT)
+        itemlabel.grid(row = 1, column=1)
+        itemframe = tk.Frame(self, relief=tk.SUNKEN, borderwidth=3)
+        itemframe.grid(row = 2, column=1)
+
+        # generate reccomended items for selected survivor and display them in the itemframe
+        def gen():
+            survivor = listbox.get(ANCHOR)
+            print(f"selected - {survivor}")
+            itemlist = recitems[survivor]
+
+            canvaslist = []
+
+            #load pictures for items
+            for i in range(len(itemlist)):
+                temp = itemlist[i]
+                canvas = tk.Canvas(itemframe, width=64, height=64)
+                img = ImageTk.PhotoImage(Image.open(f"pictures\items\{temp}.png"))
+                canvas.create_image(0, 0, anchor = 'nw', image = img)
+                canvas.image = img
+                canvaslist.append(canvas)
+                canvas.grid(row=0, column=i)
+            
+            # add pictures to frame
+            for i in range(len(itemlist)):
+                pass
+
+
+
+        # generate button that calls the generate player frames function
+        gen_but = ttk.Button(self, text = "Generate", command= gen)
+        gen_but.grid(row = 3, column= 0)
+
   
 # window for record run page
 class Record_Run(tk.Frame):
@@ -184,11 +234,9 @@ class Randomize_Run(tk.Frame):
         label.grid(row = 0, column = 1, padx = 10, pady = 10)
 
         survivorframe = tk.Frame(self, relief = tk.SUNKEN, borderwidth=3)
-        survivorframe.grid(row = 1, column = 0)
         survlabel = ttk.Label(survivorframe, font = TINYFONT)
         
         artifactframe = tk.Frame(self, relief = tk.SUNKEN, borderwidth=3)
-        artifactframe.grid(row = 1, column= 1)
         num_of_artifacts = 0
         randarts = []
         artlabels = []
@@ -197,7 +245,13 @@ class Randomize_Run(tk.Frame):
 
         def gen():
             #delete the generate button
-            gen_but.grid_forget()
+            #gen_but.grid_forget()
+            survivorframe.grid(row = 1, column = 0)
+            artifactframe.grid(row = 1, column= 1)
+
+            #destroy all the labels and pictures in the artifact frame
+            for elem in artifactframe.winfo_children():
+                elem.destroy()
 
             # GENERATE A RANDOM SURVIVOR
             randnum = random.randint(0, NUMBER_OF_SURVIVORS-1)
@@ -255,20 +309,24 @@ class Randomize_Run(tk.Frame):
             difflabel.grid(row = 1, column=2)
 
         # generate button that calls the generate player frames function
-        gen_but = ttk.Button(self, text = "GENERATE", command= gen)
+        gen_but = ttk.Button(self, text = "Generate", command= gen)
         gen_but.grid(row = 4, column= 2)
 
         # function called by the home button
         # clears the frame
         def close_page():            
             # replace the generate button
-            gen_but = ttk.Button(self, text = "GENERATE", command= gen)
-            gen_but.grid(row = 4, column= 2)
-
-            #delete artifact labels
-            artlabels.clear()
-            randarts.clear()
-            num_of_artifacts = 0
+            #gen_but = ttk.Button(self, text = "GENERATE", command= gen)
+            #gen_but.grid(row = 4, column= 2)
+            
+            #destroy all the labels and pictures in the artifact frame
+            for elem in artifactframe.winfo_children():
+                elem.destroy()
+            
+            survivorframe.grid_forget()
+            artifactframe.grid_forget()
+            difflabel.grid_forget()
+            
             controller.show_frame(StartPage)
 
         # create home button to go back to the start page
