@@ -83,11 +83,21 @@ class Generate_Loadout(tk.Frame):
          
         tk.Frame.__init__(self, parent)
 
+        # Dictionary containing the recommended items for each survivor the user can select
         recitems = {
-            "Acrid": ["Backup_Magazine", "Bison_Steak", "Energy_Drink", "Warbanner", "Topaz_Brooch"],
-            "Huntress": ["Lens-Makers_Glasses", "Crowbar", "Pauls_Goat_Hoof"]
+            "Acrid": ["Backup_Magazine", "Bison_Steak", "Energy_Drink", "Warbanner", "Topaz_Brooch", "Bandolier", "Death_Mark", "Leeching_Seed"],
+            "Artificer": ["Bustling_Fungus", "Gasoline", "Focus_Crystal", "Personal_Shield_Generator", "Stun_Grenade", "Warbanner", "Death_Mark", "Old_War_Stealthkit"],
+            "Bandit": ["Armor-Piercing_Rounds", "Backup_Magazine", "Energy_Drink", "Pauls_Goat_Hoof", "Predatory_Instincts", "Shattering_Justice", "Molten_Perforator"],
+            "Captain": ["Bison_Steak", "Energy_Drink", "Monster_Tooth", "Repulsion_Armor_Plate", "Sticky_Bomb", "AtG_Missile_Mk_1", "Chronobauble", "Defensive_Microbots"],
+            "Commando": ["Energy_Drink", "Pauls_Goat_Hoof", "Medkit", "Soldiers_Syringe", "Tri-Tip_Dagger", "Harvesters_Scythe", "Leeching_Seed", "Old_Guillotine"],
+            "Engineer": ["Bustling_Fungus", "Cautious_Slug", "Crowbar", "Backup_Magazine", "Stun_Grenade", "Sticky_Bomb", "Infusion", "Squid_Polyp"],
+            "Heretic": ["Backup_Magazine", "Bison_Steak", "Energy_Drink", "Warbanner", "Topaz_Brooch", "Razorwire", "Brainstalks", "Titanic_Knurl"],
+            "Huntress": ["Lens-Makers_Glasses", "Crowbar", "Pauls_Goat_Hoof", "Hopoo_Feather", "Ukulele", "Will-o-the-wisp", "Brilliant_Behemoth"],
+            "Loader": ["Energy_Drink", "Pauls_Goat_Hoof", "Energy_Drink", "Pauls_Goat_Hoof", "Focus_Crystal", "Predatory_Instincts", "Ceremonial_Dagger", "Molten_Perforator"],
+            "Mercenary": ["Energy_Drink", "Pauls_Goat_Hoof", "Tri-Tip_Dagger", "Crowbar", "Focus_Crystal", "Hopoo_Feather", "Wax_Quail", "Unstable_Tesla_Coil"],
+            "MUL-T": ["Gasoline", "Medkit", "Monster_Tooth", "Topaz_Brooch", "Rose_Buckler", "War_Horn", "Will-o-the-wisp", "Dios_Best_Friend"],
+            "REX": ["Backup_Magazine", "Bison_Steak", "Energy_Drink", "Warbanner", "Topaz_Brooch", "Bandolier", "Death_Mark", "Leeching_Seed"]
         }
-
         
         label = ttk.Label(self, text ="Generate Loadout", font = LARGEFONT)
         label.grid(row = 0, column = 0, padx = 10, pady = 10)
@@ -132,12 +142,6 @@ class Generate_Loadout(tk.Frame):
                 canvas.image = img
                 canvaslist.append(canvas)
                 canvas.grid(row=0, column=i)
-            
-            # add pictures to frame
-            for i in range(len(itemlist)):
-                pass
-
-
 
         # generate button that calls the generate player frames function
         gen_but = ttk.Button(self, text = "Generate", command= gen)
