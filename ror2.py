@@ -118,6 +118,10 @@ class Generate_Loadout(tk.Frame):
             itemlist = recitems[survivor]
 
             canvaslist = []
+            #clear anything currently in the frame
+            #destroy all the labels and pictures in the artifact frame
+            for elem in itemframe.winfo_children():
+                elem.destroy()
 
             #load pictures for items
             for i in range(len(itemlist)):
