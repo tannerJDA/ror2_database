@@ -3,12 +3,15 @@ from tkinter import PhotoImage, StringVar, image_names, ttk
 from tkinter.constants import ACTIVE, ANCHOR
 from PIL import ImageTk, Image
 import random
+import mysql.connector
 
 LARGEFONT =("Arial", 35)
 MEDFONT = ("Arial", 20)
 TINYFONT = ("Arial", 9)
 NUMBER_OF_PLAYERS = 1
 NUMBER_OF_SURVIVORS = 12
+
+survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
 
 containerarray = []
 labelarray = []
@@ -27,11 +30,17 @@ class application(tk.Tk):
         container.grid_rowconfigure(0, weight = 1)
         container.grid_columnconfigure(0, weight=1)
 
+        self.title("ROR2 Database")
+        logoimg = PhotoImage(file = "pictures\logo.png")
+        self.iconphoto(False, logoimg)
+
         #initializing frames to an empty array
         self.frames = {}
 
         #iterate throught a tuple consisting of the different page layouts
-        for F in (StartPage, Generate_Loadout, Record_Run, Randomize_Run):
+        for F in (StartPage, Generate_Loadout, Record_Run, Randomize_Run, Browse_DB,
+        View_Survivors, View_Challenges, View_Items):
+
             frame = F(container, self)
 
             #initialize fram of that object from page tuple
@@ -50,9 +59,11 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
+        #self.config(bg= 'Blue')
+
          # label of frame Layout 2
         label = ttk.Label(self, text ="Risk of Rain 2", font = LARGEFONT)
-        sublabel = ttk.Label(self, text = "Testing Module", font = ("Verdana", 20))
+        sublabel = ttk.Label(self, text = "Database", font = ("Verdana", 20))
          
         # place the head label in row 0 col 4
         # place the sub label in row 1 col 4
@@ -76,6 +87,73 @@ class StartPage(tk.Frame):
      
         # place button 3 in row 3 col 1
         button3.grid(row = 3, column = 1, padx = 10, pady = 10)
+
+        button4 = ttk.Button(self, text = "Browse Database",
+        command= lambda : controller.show_frame(Browse_DB))
+        button4.grid(row = 4, column=1)
+
+class Browse_DB(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "Browse Database", font = LARGEFONT)
+        lbl.grid(row = 0, column=0)
+
+        survsbut = ttk.Button(self, text = "View Survivors",
+        command= lambda : controller.show_frame(View_Survivors))
+        survsbut.grid(row = 1, column=0)
+
+        challbut = ttk.Button(self, text = "View Challenges",
+        command = lambda : controller.show_frame(View_Challenges))
+        challbut.grid(row = 2, column=0)
+
+        itembut = ttk.Button(self, text = "View Items",
+        command = lambda : controller.show_frame(View_Items))
+        itembut.grid(row = 3, column=0)
+
+         # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
+
+
+class View_Survivors(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "View Survivors", font = MEDFONT)
+        lbl.grid(row = 1, column=1)
+
+        # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
+
+
+class View_Items(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "View Items", font = MEDFONT)
+        lbl.grid(row = 1, column=1)
+
+        # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
+
+
+class View_Challenges(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "View Challenges", font = MEDFONT)
+        lbl.grid(row = 1, column=1)
+
+        # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
 
 # window for the generate loadout function
 class Generate_Loadout(tk.Frame):   
@@ -109,7 +187,7 @@ class Generate_Loadout(tk.Frame):
         listlabel.grid(row =1, column=0)
 
         # creating the listbox for the user to select which survivor they played as
-        survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
+        #survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
         survivs_var = tk.StringVar(value=survivors)
         listbox = tk.Listbox(self, listvariable=survivs_var, height = 7, selectmode='single')
         listbox.grid(row = 2, column=0)
@@ -170,7 +248,7 @@ class Record_Run(tk.Frame):
         lbl1.grid(row = 1, column = 0)
         
         # creating the listbox for the user to select which survivor they played as
-        survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
+        #survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
         survivs_var = tk.StringVar(value=survivors)
         listbox = tk.Listbox(self, listvariable=survivs_var, height = 7, selectmode='single')
         listbox.grid(row = 3, column=0)
@@ -234,7 +312,7 @@ class Randomize_Run(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
+        #survivors = ["Acrid", "Artificer", "Bandit", "Captain", "Commando", "Engineer", "Heretic", "Huntress", "Loader", "Mercenary", "MUL-T", "REX"]
         artifacts = ["Chaos", "Command", "Death", "Dissonance", "Enigma", "Evolution", "Frailty", "Glass", "Honor", "Kin", "Metamorphosis", "Sacrifice", "Soul", "Spite", "Swarms", "Vengence"]
 
         gen_but = ttk.Button()
@@ -343,5 +421,9 @@ class Randomize_Run(tk.Frame):
 
 
 #driver code
+
+#connect to sql database
+
+
 app = application()
 app.mainloop()
