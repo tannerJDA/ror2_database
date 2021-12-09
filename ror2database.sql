@@ -78,7 +78,7 @@ CREATE TABLE Monster(
     PRIMARY KEY(mons_name)
 );
 /* run history table */
-CREATE TABLE RunHistory(
+CREATE TABLE RunHisory(
 	surv_name VARCHAR(80) NOT NULL,
     hours INT,
     minutes INT NOT NULL,

@@ -4,9 +4,12 @@ from tkinter.constants import ACTIVE, ANCHOR
 from PIL import ImageTk, Image
 import random
 import mysql.connector
+import os
+from pathlib import Path
 
-LARGEFONT =("Arial", 35)
+LARGEFONT =("Arial Bold", 35)
 MEDFONT = ("Arial", 20)
+BOLDMEDFONT = ("Arial", 15)
 TINYFONT = ("Arial", 9)
 NUMBER_OF_PLAYERS = 1
 NUMBER_OF_SURVIVORS = 12
@@ -31,15 +34,18 @@ class application(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.title("ROR2 Database")
-        logoimg = PhotoImage(file = "pictures\logo.png")
+        cwd = os.getcwd()
+        logoimg = PhotoImage(file = os.path.join(cwd, "ror2_database\pictures\logo.png"))
         self.iconphoto(False, logoimg)
+        self.state('zoomed')
+
 
         #initializing frames to an empty array
         self.frames = {}
 
         #iterate throught a tuple consisting of the different page layouts
         for F in (StartPage, Generate_Loadout, Record_Run, Randomize_Run, Browse_DB,
-        View_Survivors, View_Challenges, View_Items):
+        View_Survivors, View_Challenges, View_Items, View_Skills, View_Artifacts, View_Monsters, View_Runs):
 
             frame = F(container, self)
 
@@ -111,6 +117,22 @@ class Browse_DB(tk.Frame):
         command = lambda : controller.show_frame(View_Items))
         itembut.grid(row = 3, column=0)
 
+        skillbut = ttk.Button(self, text = "View Skills",
+        command = lambda : controller.show_frame(View_Skills))
+        skillbut.grid(row = 4, column=0)
+
+        artbut = ttk.Button(self, text = "View Artifacts",
+        command = lambda : controller.show_frame(View_Artifacts))
+        artbut.grid(row = 5, column=0)
+
+        monbut = ttk.Button(self, text = "View Monsters",
+        command = lambda : controller.show_frame(View_Monsters))
+        monbut.grid(row = 6, column=0)
+
+        runbut = ttk.Button(self, text = "View Run History",
+        command = lambda : controller.show_frame(View_Runs))
+        runbut.grid(row = 7, column=0)
+
          # button to show frame 3 with text layout3
         button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
         # putting the button in its place by using grid
@@ -122,25 +144,115 @@ class View_Survivors(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         lbl = ttk.Label(self, text = "View Survivors", font = MEDFONT)
-        lbl.grid(row = 1, column=1)
+        lbl.grid(row = 0, column=1)
+        
+        ### ADD COLUMN HEADERS ###
+        lbl = ttk.Label(self, text = "Unlock", anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 0)
+        lbl = ttk.Label(self, text = "Name", anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 1)
+        lbl = ttk.Label(self, text = "Health", anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 2)
+        lbl = ttk.Label(self, text = "Regen", anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 3)
+        lbl = ttk.Label(self, text = "Damage", anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 4)
+        lbl = ttk.Label(self, text = "Armor", anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 5)
+        lbl = ttk.Label(self, text = "Speed", anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 6)
+
+        ### ESTABLISH CONNECTION TO DATABASE ###
+        my_connect = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'password',
+            database = 'ror2'
+        )
+
+        curs = my_connect.cursor()
+        curs.execute("SELECT * FROM Survivor ORDER BY surv_name")
+
+        i = 2
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, width = 20, text = elem[j], anchor = 'center')
+                e.grid(row = i, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
 
         # button to show frame 3 with text layout3
         button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
         # putting the button in its place by using grid
-        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
+        button2.grid(row = i + 2, column = 3, padx = 10, pady = 10)
+
+        my_connect.close()
 
 
 class View_Items(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        lbl = ttk.Label(self, text = "View Items", font = MEDFONT)
-        lbl.grid(row = 1, column=1)
+        lbl = ttk.Label(self, text = "ACTIVE ITEMS", font = MEDFONT)
+        lbl.grid(row = 0, column=1)
+
+        ### ADD COLUMN HEADERS ###
+        lbl = ttk.Label(self, text = "Name", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = 1, column = 0)
+        lbl = ttk.Label(self, text = "Cooldown", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = 1, column = 1)
+
+        ### ESTABLISH CONNECTION TO DATABASE ###
+        my_connect = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'password',
+            database = 'ror2'
+        )
+
+        curs = my_connect.cursor()
+        curs.execute("SELECT * FROM ActiveItems")
+
+        i = 2
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, width = 20, text = elem[j], anchor = 'center')
+                e.grid(row = i + 2, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
+
+        i = i + 4
+        lbl = ttk.Label(self, text = "PASSIVE ITEMS", font = MEDFONT)
+        lbl.grid(row = i, column = 1, pady = 10)
+
+        lbl = ttk.Label(self, text = "Name", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = i + 1, column = 0)
+        lbl = ttk.Label(self, text = "Stack Type", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = i + 1, column = 1)
+        lbl = ttk.Label(self, text = "Item Type", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = i + 1, column = 2)
+        lbl = ttk.Label(self, text = "Stat Stack", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = i + 1, column = 3)
+        lbl = ttk.Label(self, text = "Start Value", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = i + 1, column = 4)
+        lbl = ttk.Label(self, text = "Value Gain", width = 20, font = BOLDMEDFONT, anchor = 'center')
+        lbl.grid(row = i + 1, column = 5)
+
+        i = i + 1
+        curs.execute("SELECT * FROM PassiveItems")
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, width = 20, text = elem[j], anchor = 'center')
+                e.grid(row = i + 2, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
 
         # button to show frame 3 with text layout3
         button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
         # putting the button in its place by using grid
-        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
+        button2.grid(row = i + 2, column = 3, padx = 10, pady = 10)
+
+        my_connect.close()
 
 
 class View_Challenges(tk.Frame):
@@ -148,12 +260,224 @@ class View_Challenges(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         lbl = ttk.Label(self, text = "View Challenges", font = MEDFONT)
-        lbl.grid(row = 1, column=1)
+        lbl.grid(row = 0, column=1)
+
+        ### ADD COLUMN HEADERS ###
+        lbl = ttk.Label(self, text = "Name", width = 20, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 0)
+        lbl = ttk.Label(self, text = "Category", width = 20, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 1)
+        lbl = ttk.Label(self, text = "Description", width = 20, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 2)
+        lbl = ttk.Label(self, text = "Unlocks", width = 20, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 3)
+
+        ### ESTABLISH CONNECTION TO DATABASE ###
+        my_connect = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'password',
+            database = 'ror2'
+        )
+
+        curs = my_connect.cursor()
+        curs.execute("SELECT * FROM Challenge")
+
+        i = 2
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, text = elem[j], anchor = 'center')
+                e.grid(row = i + 2, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
 
         # button to show frame 3 with text layout3
         button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
         # putting the button in its place by using grid
-        button2.grid(row = 5, column = 3, padx = 10, pady = 10)
+        button2.grid(row = 0, column = 4, padx = 10, pady = 10)
+
+        my_connect.close()
+
+class View_Skills(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "View Skills", font = MEDFONT)
+        lbl.grid(row = 0, column=1)
+
+        ### ADD COLUMN HEADERS ###
+        lbl = ttk.Label(self, text = "Survivor", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 1)
+        lbl = ttk.Label(self, text = "Name", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 2)
+        lbl = ttk.Label(self, text = "Type", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 3)
+        lbl = ttk.Label(self, text = "Description", width = 15, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 4)
+        lbl = ttk.Label(self, text = "Cooldown", width = 20, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 5)
+        lbl = ttk.Label(self, text = "Proc Coeff", width = 20, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 6)
+
+
+        ### ESTABLISH CONNECTION TO DATABASE ###
+        my_connect = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'password',
+            database = 'ror2'
+        )
+
+        curs = my_connect.cursor()
+        curs.execute("SELECT * FROM Skill")
+
+        i = 2
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, text = elem[j], anchor = 'center')
+                e.grid(row = i + 2, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
+
+        # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = i + 2, column = 3, padx = 10, pady = 10)
+
+        my_connect.close()
+
+class View_Artifacts(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "View Artifacts", font = MEDFONT)
+        lbl.grid(row = 0, column=1)
+
+        lbl = ttk.Label(self, text = "Name", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 0)
+        lbl = ttk.Label(self, text = "Enviroment", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 1)
+        lbl = ttk.Label(self, text = "Description", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 2)
+        lbl = ttk.Label(self, text = "Unlock Pattern", width = 11, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 3)
+
+        ### ESTABLISH CONNECTION TO DATABASE ###
+        my_connect = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'password',
+            database = 'ror2'
+        )
+
+        curs = my_connect.cursor()
+        curs.execute("SELECT * FROM Artifact")
+
+        i = 2
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, text = elem[j], anchor = 'w')
+                e.grid(row = i + 2, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
+
+        # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = i + 2, column = 3, padx = 10, pady = 10)
+
+        my_connect.close()
+
+class View_Monsters(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "View Monsters", font = MEDFONT)
+        lbl.grid(row = 0, column=1)
+
+        lbl = ttk.Label(self, text = "Name", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 0)
+        lbl = ttk.Label(self, text = "Health", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 1)
+        lbl = ttk.Label(self, text = "Regen", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 2)
+        lbl = ttk.Label(self, text = "Damage", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 3)
+        lbl = ttk.Label(self, text = "Armor", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 4)
+        lbl = ttk.Label(self, text = "Speed", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 5)
+        lbl = ttk.Label(self, text = "Type", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 6)
+
+        ### ESTABLISH CONNECTION TO DATABASE ###
+        my_connect = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'password',
+            database = 'ror2'
+        )
+
+        curs = my_connect.cursor()
+        curs.execute("SELECT * FROM Monster")
+
+        i = 2
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, text = elem[j], anchor = 'w')
+                e.grid(row = i + 2, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
+
+        # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = i + 2, column = 3, padx = 10, pady = 10)
+
+        my_connect.close()
+
+class View_Runs(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        lbl = ttk.Label(self, text = "View Run History", font = MEDFONT)
+        lbl.grid(row = 0, column=1)
+
+        lbl = ttk.Label(self, text = "Survivor", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 0)
+        lbl = ttk.Label(self, text = "Hours", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 1)
+        lbl = ttk.Label(self, text = "Minutes", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 2)
+        lbl = ttk.Label(self, text = "Difficulty", width = 10, anchor = 'center', font = BOLDMEDFONT)
+        lbl.grid(row = 1, column = 3)
+        
+
+        ### ESTABLISH CONNECTION TO DATABASE ###
+        my_connect = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = 'password',
+            database = 'ror2'
+        )
+
+        curs = my_connect.cursor()
+        curs.execute("SELECT * FROM RunHistory")
+
+        i = 2
+        for elem in curs:
+            for j in range(len(elem)):
+                e = ttk.Label(self, text = elem[j], anchor = 'center')
+                e.grid(row = i + 2, column = j)
+                #e.insert(0, elem[j])
+            i = i+1
+
+        # button to show frame 3 with text layout3
+        button2 = ttk.Button(self, text ="Home", command = lambda : controller.show_frame(StartPage))
+        # putting the button in its place by using grid
+        button2.grid(row = i + 2, column = 3, padx = 10, pady = 10)
+
+        my_connect.close()
 
 # window for the generate loadout function
 class Generate_Loadout(tk.Frame):   
@@ -215,7 +539,8 @@ class Generate_Loadout(tk.Frame):
             for i in range(len(itemlist)):
                 temp = itemlist[i]
                 canvas = tk.Canvas(itemframe, width=64, height=64)
-                img = ImageTk.PhotoImage(Image.open(f"pictures\items\{temp}.png"))
+                cwd = os.getcwd()
+                img = ImageTk.PhotoImage(Image.open(os.path.join(cwd, f"ror2_database\pictures\items\{temp}.png")))
                 canvas.create_image(0, 0, anchor = 'nw', image = img)
                 canvas.image = img
                 canvaslist.append(canvas)
@@ -291,6 +616,23 @@ class Record_Run(tk.Frame):
 
             survivor = listbox.get(ANCHOR)
 
+            ### ESTABLISH CONNECTION TO DATABASE ###
+            my_connect = mysql.connector.connect(
+                host = 'localhost',
+                user = 'root',
+                password = 'password',
+                database = 'ror2'
+            )
+
+            # add run data to table
+            curs = my_connect.cursor()
+            #cmnd = "INSERT INTO RunHistory (surv_name, hours, minutes, diff) VALUES (%s, %f, %f, %s)"
+            #vals = (survivor, int(hours), int(minutes), difficulty)
+            curs.execute(f"INSERT INTO RunHistory (surv_name, hours, minutes, diff) VALUES ('{survivor}', {hours}, {minutes}, '{difficulty}')")
+            my_connect.commit()
+            my_connect.close()
+
+
             print(f"""
             Submitting run with data...\n
             Survivor - {survivor}\n
@@ -345,7 +687,7 @@ class Randomize_Run(tk.Frame):
 
             #load image of survivor
             canvas = tk.Canvas(survivorframe, width=128, height=128)
-            img = ImageTk.PhotoImage(Image.open(f"pictures\survivors\{surv}.png"))
+            img = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), f"ror2_database\pictures\survivors\{surv}.png")))
             canvas.create_image(0, 0, anchor = 'nw', image = img)
             canvas.image = img
             canvas.grid(row = 1, column = 1)
@@ -372,7 +714,7 @@ class Randomize_Run(tk.Frame):
                 artname = randarts[i]
 
                 artcanvas = tk.Canvas(artifactframe, width =64, height=64)
-                img = ImageTk.PhotoImage(Image.open(f"pictures\\artifacts\{artname}.png"))
+                img = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), f"ror2_database\pictures\\artifacts\{artname}.png")))
                 artcanvas.create_image(0, 0, anchor = 'nw', image = img)
                 artcanvas.image = img
 
